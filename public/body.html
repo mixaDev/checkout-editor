@@ -1,0 +1,23 @@
+<div id=app></div>
+
+<script type=text/x-vue-template id=f-fields>
+  <div>
+    <div class="f-block f-block-hr">
+      <input-text name="field_11" value="field_11_html_value" validate="required" custom></input-text>
+      <div class="f-row">
+        <div class="f-col-xs-6">
+          <input-text name="email" validate="required|email"></input-text>
+        </div>
+        <div class="f-col-xs-6">
+          <input-text name="phone" label="Телефон" validate="required|numeric"></input-text>
+        </div>
+      </div>
+    </div>
+    <div class="f-block f-block-hr">
+      <div class="f-block-sm">
+        <input-amount name="amount" label="Сума к оплате" :on-input="onInput"></input-amount>
+        <input-text name="field_5" validate="required|alpha_num" custom></input-text>
+      </div>
+    </div>
+  </div>
+</script>
