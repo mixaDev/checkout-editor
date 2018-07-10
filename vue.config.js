@@ -3,7 +3,7 @@ module.exports = {
   productionSourceMap: false,
   configureWebpack: {
     output: {
-      filename: '[name].js',
+      filename: 'checkout-editor.js',
       // chunkFilename: '[name].js'
     }
   },
@@ -15,12 +15,15 @@ module.exports = {
       extractCSSPlugin &&
       extractCSSPlugin.tap(() => [
         {
-          filename: '[name].css',
+          filename: 'checkout-editor.css',
           // chunkFilename: '[name].css'
         }
       ]);
     }
 
-    config.plugins.delete('preload')
+    config.plugins
+      .delete('html')
+      .delete('prefetch')
+      .delete('preload')
   }
 }
