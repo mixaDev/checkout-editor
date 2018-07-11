@@ -84,9 +84,6 @@ export default {
     }
   },
   computed: {
-    ifrw(){
-      return (this.$refs.iframe.contentWindow) ? this.$refs.iframe.contentWindow : (this.$refs.iframe.contentDocument.document) ? this.$refs.iframe.contentDocument.document : this.$refs.iframe.contentDocument
-    },
     cmOptionJs(){
       return {
         ...this.cmOption,
@@ -132,7 +129,7 @@ ${this.codeJs}
 `
     }
   },
-  created() {
+  mounted() {
     Promise.all([
       this.$http.get('body.html'),
       this.$http.get('style.css'),
@@ -141,7 +138,11 @@ ${this.codeJs}
       this.codeHtml = response[0].body
       this.codeCss = response[1].body
       this.codeJs = response[2].body
-      this.renderCheckout()
+
+      this.$nextTick(function () {
+        this.ifrw = (this.$refs.iframe.contentWindow) ? this.$refs.iframe.contentWindow : (this.$refs.iframe.contentDocument.document) ? this.$refs.iframe.contentDocument.document : this.$refs.iframe.contentDocument
+        this.renderCheckout()
+      })
     });
   },
   methods: {
