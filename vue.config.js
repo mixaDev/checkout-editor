@@ -21,9 +21,11 @@ module.exports = {
       ]);
     }
 
-    config.plugins
-      .delete('html')
-      .delete('prefetch')
-      .delete('preload')
+    if (process.env.NODE_ENV === 'production') {
+      config.plugins
+        .delete('html')
+        .delete('prefetch')
+        .delete('preload')
+    }
   }
 }

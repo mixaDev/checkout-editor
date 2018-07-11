@@ -1,21 +1,30 @@
 <template>
-  <div id="app">
-    <div class="wrapper">
-      <div class="html">
-        <h3>HTML</h3>
-        <codemirror v-model="codeHtml" :options="cmOptionHtml" @blur="onCmBlur"></codemirror>
-      </div>
-      <div class="css">
-        <h3>CSS</h3>
-        <codemirror v-model="codeCss" :options="cmOptionCss" @blur="onCmBlur"></codemirror>
-      </div>
-      <div class="js">
-        <h3>JS</h3>
-        <codemirror v-model="codeJs" :options="cmOptionJs" @blur="onCmBlur"></codemirror>
-      </div>
-      <div class="result">
-        <pre class="pre"><code>{{ result }}</code></pre>
-      </div>
+  <div class="wrapper">
+    <div class="html" :class="{ full: full.html }">
+      <h3>HTML
+        <button type="button"  @click="toggleFull('html')">{{full.html ? 'min' : 'full'}}</button>
+      </h3>
+      <codemirror v-model="codeHtml" :options="cmOptionHtml"></codemirror>
+    </div>
+    <div class="css" :class="{ full: full.css }">
+      <h3>CSS
+        <button type="button"  @click="toggleFull('css')">{{full.css ? 'min' : 'full'}}</button>
+      </h3>
+      <codemirror v-model="codeCss" :options="cmOptionCss"></codemirror>
+    </div>
+    <div class="js" :class="{ full: full.js }">
+      <h3>JS
+        <button type="button"  @click="toggleFull('js')">{{full.js ? 'min' : 'full'}}</button>
+        <button type="button" @click="renderCheckout()">render</button>
+      </h3>
+      <codemirror v-model="codeJs" :options="cmOptionJs"></codemirror>
+    </div>
+    <div class="iframe" :class="{ full: full.iframe }">
+      <button type="button"  @click="toggleFull('iframe')">{{full.iframe ? 'min' : 'full'}}</button>
+      <iframe ref="iframe"></iframe>
+    </div>
+    <div class="result">
+      <pre class="pre"><code>{{ result }}</code></pre>
     </div>
   </div>
 </template>
@@ -36,10 +45,7 @@
   import 'codemirror/mode/xml/xml.js'
 
   // theme css
-//  import 'codemirror/theme/monokai.css'
   import 'codemirror/theme/twilight.css'
-//  import 'codemirror/theme/paraiso-light.css'
-//  import 'codemirror/theme/ambiance.css'
 
   // require active-line.js
   import'codemirror/addon/selection/active-line.js'
@@ -58,9 +64,10 @@
   import'codemirror/addon/edit/closetag.js'
 
 export default {
-  name: 'app',
+  name: 'checkout-editor',
   data(){
     return {
+      full: {},
       codeJs: '',
       codeCss: '',
       codeHtml: '',
@@ -77,6 +84,9 @@ export default {
     }
   },
   computed: {
+    ifrw(){
+      return (this.$refs.iframe.contentWindow) ? this.$refs.iframe.contentWindow : (this.$refs.iframe.contentDocument.document) ? this.$refs.iframe.contentDocument.document : this.$refs.iframe.contentDocument
+    },
     cmOptionJs(){
       return {
         ...this.cmOption,
@@ -123,28 +133,42 @@ ${this.codeJs}
     }
   },
   created() {
-    this.$http.get('style.css').then(response => {
-      this.codeCss = response.body
-    });
-    this.$http.get('script.js').then(response => {
-      this.codeJs = response.body
-    });
-    this.$http.get('body.html').then(response => {
-      this.codeHtml = response.body
+    Promise.all([
+      this.$http.get('body.html'),
+      this.$http.get('style.css'),
+      this.$http.get('script.js')
+    ]).then((response) => {
+      this.codeHtml = response[0].body
+      this.codeCss = response[1].body
+      this.codeJs = response[2].body
+      this.renderCheckout()
     });
   },
   methods: {
-    onCmBlur() {
-      console.log('onCmBlur')
+    renderCheckout() {
+      this.ifrw.document.open();
+      this.ifrw.document.write(this.result);
+      this.ifrw.document.close();
+    },
+    toggleFull (type){
+      this.$set(this.full, type, !this.full[type])
     }
-
   }
 }
 </script>
 
 <style>
+  iframe {
+    display: block;
+    border: 0;
+    width: 100%;
+    height: 100%;
+  }
   .CodeMirror {
     height: 50vh;
+  }
+  .CodeMirror-wrap pre {
+    word-break: break-all;
   }
   body {
     margin: 0;
@@ -189,10 +213,28 @@ ${this.codeJs}
   .js {
     grid-column: 3;
   }
+  .iframe{
+    background: #fff;
+    position: relative;
+    grid-column: 1/3;
+    grid-row: 2;
+  }
+  .iframe button {
+    position: absolute;
+  }
   .result {
     background: #fff;
-    grid-column: 1/4;
+    grid-column: 3/4;
     grid-row: 2;
-    overflow-y: scroll;
+    overflow-y: scroll
+  }
+  .full {
+    position: relative;
+    z-index: 10;
+    grid-column: 1/4;
+    grid-row: 1/3;
+  }
+  .full .CodeMirror{
+    height: calc(100vh - 25px);
   }
 </style>
