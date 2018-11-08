@@ -2,40 +2,36 @@
   <div class="wrapper">
     <div class="html" :class="{ full: full.html }">
       <h3>HTML
-        <button type="button"  @click="toggleFull('html')">{{full.html ? 'min' : 'full'}}</button>
+        <button-full :full.sync="full.html"></button-full>
       </h3>
       <codemirror v-model="codeHtml" :options="cmOptionHtml"></codemirror>
     </div>
     <div class="css" :class="{ full: full.css }">
       <h3>CSS
-        <button type="button"  @click="toggleFull('css')">{{full.css ? 'min' : 'full'}}</button>
+        <button-full :full.sync="full.css"></button-full>
       </h3>
       <codemirror v-model="codeCss" :options="cmOptionCss"></codemirror>
     </div>
     <div class="js" :class="{ full: full.js }">
       <h3>JS
-        <button type="button"  @click="toggleFull('js')">{{full.js ? 'min' : 'full'}}</button>
+        <button-full :full.sync="full.js"></button-full>
         <button type="button" @click="renderCheckout()">render</button>
       </h3>
       <codemirror v-model="codeJs" :options="cmOptionJs"></codemirror>
     </div>
     <div class="iframe" :class="{ full: full.iframe }">
-      <button type="button"  @click="toggleFull('iframe')">{{full.iframe ? 'min' : 'full'}}</button>
+      <button-full :full.sync="full.iframe"></button-full>
       <iframe ref="iframe"></iframe>
     </div>
     <div class="result">
-      <pre class="pre"><code>{{ result }}</code></pre>
+      <codemirror :value="result" :options="cmOptionResult"></codemirror>
     </div>
   </div>
 </template>
 
 <script>
-  import Vue from 'vue'
-  import VueResource from 'vue-resource'
-  import VueCodemirror from 'vue-codemirror'
-
-  Vue.use(VueResource)
-  Vue.use(VueCodemirror)
+  import { codemirror } from 'vue-codemirror'
+  import ButtonFull from '@/components/button-full.vue'
 
   import 'codemirror/lib/codemirror.css'
 
@@ -65,6 +61,10 @@
 
 export default {
   name: 'checkout-editor',
+  components: {
+    ButtonFull,
+    codemirror
+  },
   data(){
     return {
       full: {},
@@ -84,6 +84,9 @@ export default {
     }
   },
   computed: {
+//    fullClass: (type) => () => {
+//      full: this.full[type]
+//    },
     cmOptionJs(){
       return {
         ...this.cmOption,
@@ -103,9 +106,16 @@ export default {
         autoCloseTags: true,
       }
     },
+    cmOptionResult(){
+      return {
+        ...this.cmOption,
+        mode: 'text/html',
+        readOnly: true,
+        theme: "default",
+      }
+    },
     result(){
-      return `
-<!DOCTYPE html>
+      return `<!DOCTYPE html>
 <html>
 <head>
 <meta charset=utf-8>
@@ -150,9 +160,6 @@ ${this.codeJs}
       this.ifrw.document.open();
       this.ifrw.document.write(this.result);
       this.ifrw.document.close();
-    },
-    toggleFull (type){
-      this.$set(this.full, type, !this.full[type])
     }
   }
 }
@@ -168,6 +175,12 @@ ${this.codeJs}
   .CodeMirror {
     height: 50vh;
   }
+  .result .CodeMirror {
+    height: calc(50vh - 35px);
+  }
+  .full .CodeMirror {
+    height: calc(100vh - 35px);
+  }
   .CodeMirror-wrap pre {
     word-break: break-all;
   }
@@ -181,14 +194,6 @@ ${this.codeJs}
     color: #fff;
     line-height: 25px;
     padding-left: 42px;
-  }
-  pre {
-    margin: 0;
-    word-break: break-all;
-    word-wrap: break-word;
-  }
-  code {
-    white-space: pre-wrap;
   }
   .wrapper {
     display: grid;
@@ -224,18 +229,13 @@ ${this.codeJs}
     position: absolute;
   }
   .result {
-    background: #fff;
     grid-column: 3/4;
     grid-row: 2;
-    overflow-y: scroll
   }
   .full {
     position: relative;
     z-index: 10;
     grid-column: 1/4;
     grid-row: 1/3;
-  }
-  .full .CodeMirror{
-    height: calc(100vh - 25px);
   }
 </style>
